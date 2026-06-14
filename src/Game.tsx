@@ -1,16 +1,37 @@
 import { colorOptions, type colors, type GradeResult, type Mastermind } from "./GameLogic/Mastermind";
 
+// 0 = top, 1 = right, 2 = bottom, 3 = left
+function insetSides(sides: number[], width = 2, color = 'black',): string {
+  const offsets: Record<number, string> = {
+    0: `inset 0 ${width}px 0 0 ${color}`,
+    1: `inset -${width}px 0 0 0 ${color}`,
+    2: `inset 0 -${width}px 0 0 ${color}`,
+    3: `inset ${width}px 0 0 0 ${color}`,
+  };
+
+  const boxShadow = sides
+    .map((s) => offsets[s])
+    .filter(Boolean)
+    .join(', ');
+
+  return boxShadow;
+}
+
 interface AttemptRowProps {
   attempt: colors[];
   result: GradeResult;
+  topRow: boolean;
 }
 
-function AttemptRow({ attempt, result }: AttemptRowProps) {
+function AttemptRow({ attempt, result, topRow }: AttemptRowProps) {
 
   return (
     <>
       <div 
         className="px-3 flex items-center justify-center gap-4 bg-gray-400"
+        style={{
+          boxShadow: topRow ? insetSides([0, 2, 3], 1) : insetSides([2, 3], 1),
+        }}
       >
         {attempt.map((c, i) => {
           return (
@@ -25,7 +46,12 @@ function AttemptRow({ attempt, result }: AttemptRowProps) {
         })} 
       </div>
       
-      <div className='flex flex-col items-center justify-center bg-gray-400'>
+      <div 
+        className='flex flex-col items-center justify-center bg-gray-500'
+        style={{
+          boxShadow: topRow ? insetSides([0, 1, 2], 1) : insetSides([1, 2], 1),
+        }}
+      >
         <div 
           className="grid grid-cols-2 grid-rows-2 gap-1"
         >
@@ -62,7 +88,7 @@ interface CurrAttemptProps {
 
 function CurrAttemptRow({ currAttempt, onPegClick }: CurrAttemptProps) {
   return (
-    <div className='px-3 flex items-center justify-center gap-4 bg-gray-400'>
+    <div className='px-3 flex items-center justify-center gap-4 bg-amber-700'>
       {currAttempt.map((c, i) => {
         return (
           <div 
@@ -138,7 +164,7 @@ export function Game(props: GameProps) {
       <div className='grid grid-cols-[216px_64px] auto-rows-[64px]'>
         {
           game.attempts.map((a, i) => {
-            return <AttemptRow key={i} attempt={a} result={game.gradeResults[i]} />
+            return <AttemptRow key={i} attempt={a} result={game.gradeResults[i]} topRow={i == 0}/>
           })
         }
         <CurrAttemptRow currAttempt={game.currAttempt} onPegClick={game.popColor.bind(game)} />
