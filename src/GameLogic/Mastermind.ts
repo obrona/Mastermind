@@ -1,6 +1,6 @@
 
-export type colors = 'red' | 'yellow' | 'green' | 'blue' | 'white' | 'black';
-export const colorOptions: colors[] = ['red', 'yellow', 'green', 'blue', 'white', 'black'];
+export type colors = 'red' | 'yellow' | 'green' | 'blue' | 'purple' | 'black';
+export const colorOptions: colors[] = ['red', 'yellow', 'green', 'blue', 'purple', 'black'];
 
 export interface GradeResult {
     correctColorCorrectPos: number;
@@ -65,8 +65,13 @@ export class Mastermind {
         this.updateFn();
     }
 
-    popCollor(i: number) {
+    popColor(i: number) {
         this.currAttempt[i] = null;
+        this.updateFn();
+    }
+
+    clearCurrAttempt() {
+        this.currAttempt = Array<colors | null>(4).fill(null);
         this.updateFn();
     }
 
@@ -86,6 +91,8 @@ export class Mastermind {
             this.gameOver = true;
             this.isWin = false;
         }
+
+        this.currAttempt = Array(4).fill(null);
 
         this.updateFn();  
     }
