@@ -12,7 +12,7 @@ export function GameInstrutionDialog({ ref }: Props) {
       <div className='p-2'>
         <ul className='list-disc pl-5 space-y-1'>
           <li>
-            The goal of the game is to guess the code within a certain amount of attempts
+            The goal of the game is to guess the code within 12 tries.
           </li>
 
           <li>
