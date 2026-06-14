@@ -1,4 +1,6 @@
 import { colorOptions, type colors, type GradeResult, type Mastermind } from "./GameLogic/Mastermind";
+import { useEffect, useState, useRef } from "react";
+import styles from './Game.module.css';
 
 // 0 = top, 1 = right, 2 = bottom, 3 = left
 function insetSides(sides: number[], width = 2, color = 'black',): string {
@@ -84,11 +86,45 @@ function AttemptRow({ attempt, result, topRow }: AttemptRowProps) {
 interface CurrAttemptProps {
   currAttempt: (colors | null)[];
   onPegClick: (i: number) => void;
+  submitting?: boolean;
+  setSubmitting?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function CurrAttemptRow({ currAttempt, onPegClick }: CurrAttemptProps) {
+function CurrAttemptRow({ currAttempt, onPegClick, submitting, setSubmitting }: CurrAttemptProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const emptyIdxs = currAttempt
+    .map((v, i) => {
+      return !v ? i : undefined
+    })
+    .filter(Boolean) as number[]
+  
+  useEffect(() => {
+    if (!submitting) return;
+    
+    const children = Array.from(ref.current!.children) as HTMLDivElement[];
+    const selected = emptyIdxs.map(i => children[i]);
+    
+    selected.forEach(el => {
+      el.classList.remove(`${styles.shake}`);
+      void el.offsetWidth
+      el.classList.add(`${styles.shake}`);
+      el.addEventListener('animationend', () => el.classList.remove(`${styles.shake}`));
+    });
+
+    setTimeout(() => {
+      if (setSubmitting) setSubmitting(false);
+    }, 400);
+
+    return () => {
+      if (setSubmitting) setSubmitting(false);
+    }
+  }, [submitting]);
+  
   return (
-    <div className='px-3 flex items-center justify-center gap-4 bg-amber-700'>
+    <div 
+      ref={ref}
+      className='px-3 flex items-center justify-center gap-4 bg-amber-700'
+    >
       {currAttempt.map((c, i) => {
         return (
           <div 
@@ -113,10 +149,11 @@ interface ColorBoardProps {
   onColorClick: (c: colors) => void;
   clear: () => void;
   enter: () => void;
+  submitting: boolean;
 }
 
 function ColorBoard(props: ColorBoardProps) {
-  const { onColorClick, clear, enter } = props;
+  const { onColorClick, clear, enter, submitting } = props;
 
   return (
     <div className='h-16 px-2 flex items-center bg-gray-400 gap-4 rounded-lg'>
@@ -142,7 +179,8 @@ function ColorBoard(props: ColorBoardProps) {
         </button>
 
         <button
-          className='text-xl px-2 py-1 rounded-md bg-white hover:scale-105'
+          disabled={submitting}
+          className='text-xl px-2 py-1 rounded-md bg-white hover:scale-105 disabled:bg-gray-500'
           onClick={enter}
         >
           ➤
@@ -159,6 +197,7 @@ interface GameProps {
 
 export function Game(props: GameProps) {
   const { game } = props;
+  const [submitting, setSubmitting] = useState(false);
   return (
     <div className='[grid-area:2/1/-1/-1] flex flex-col items-center mt-4 gap-4'>
       <div className='grid grid-cols-[216px_64px] auto-rows-[64px]'>
@@ -172,7 +211,11 @@ export function Game(props: GameProps) {
       <ColorBoard 
         onColorClick={(c) => game.addColor(c)}
         clear={() => game.clearCurrAttempt()}
-        enter={() => game.submit()}
+        enter={() => {
+          setSubmitting(true);
+          game.submit();
+        }}
+        submitting={submitting}
       />
     </div>
   )
