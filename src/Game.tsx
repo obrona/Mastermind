@@ -92,22 +92,9 @@ interface CurrAttemptProps {
 
 function CurrAttemptRow({ currAttempt, onPegClick, submitting, setSubmitting }: CurrAttemptProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const emptyIdxs = currAttempt
-    .map((v, i) => (!v ? i : -1))
-    .filter((i) => i >= 0)
   
   useEffect(() => {
     if (!submitting) return;
-    
-    const children = Array.from(ref.current!.children) as HTMLDivElement[];
-    const selected = emptyIdxs.map(i => children[i]);
-    
-    selected.forEach(el => {
-      el.classList.remove(`${styles.shake}`);
-      void el.offsetWidth
-      el.classList.add(`${styles.shake}`);
-      el.addEventListener('animationend', () => el.classList.remove(`${styles.shake}`));
-    });
 
     setTimeout(() => {
       if (setSubmitting) setSubmitting(false);
@@ -127,7 +114,7 @@ function CurrAttemptRow({ currAttempt, onPegClick, submitting, setSubmitting }: 
         return (
           <div 
             key={i}
-            className='h-8 w-8 rounded-full'
+            className={'h-8 w-8 rounded-full ' + `${submitting && c == null ? styles.shake : ''}`}
             style={{
               backgroundColor: c ?? 'white',
             }}
