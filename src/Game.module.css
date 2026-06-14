@@ -8,5 +8,6 @@
 
 .shake {
   animation: shake 0.4s ease;
+  border: 1px solid;
   border-color: red !important;
 }
