@@ -93,10 +93,8 @@ interface CurrAttemptProps {
 function CurrAttemptRow({ currAttempt, onPegClick, submitting, setSubmitting }: CurrAttemptProps) {
   const ref = useRef<HTMLDivElement>(null);
   const emptyIdxs = currAttempt
-    .map((v, i) => {
-      return !v ? i : undefined
-    })
-    .filter(Boolean) as number[]
+    .map((v, i) => (!v ? i : -1))
+    .filter((i) => i >= 0)
   
   useEffect(() => {
     if (!submitting) return;
@@ -150,10 +148,11 @@ interface ColorBoardProps {
   clear: () => void;
   enter: () => void;
   submitting: boolean;
+  gameOver: boolean;
 }
 
 function ColorBoard(props: ColorBoardProps) {
-  const { onColorClick, clear, enter, submitting } = props;
+  const { onColorClick, clear, enter, submitting, gameOver } = props;
 
   return (
     <div className='h-16 px-2 flex items-center bg-gray-400 gap-4 rounded-lg'>
@@ -172,15 +171,16 @@ function ColorBoard(props: ColorBoardProps) {
 
       <div className="flex gap-1 items-center">
         <button 
-          className='text-xl px-2 py-1 rounded-md bg-white text-red-500 hover:scale-105'
+          disabled={gameOver}
+          className='text-xl px-2 py-1 rounded-md bg-white text-red-500 hover:scale-105  disabled:bg-gray-500 disabled:hover:scale-100'
           onClick={clear}
         >
           🗑
         </button>
 
         <button
-          disabled={submitting}
-          className='text-xl px-2 py-1 rounded-md bg-white hover:scale-105 disabled:bg-gray-500'
+          disabled={submitting || gameOver}
+          className='text-xl px-2 py-1 rounded-md bg-white hover:scale-105 disabled:bg-gray-500 disabled:hover:scale-100'
           onClick={enter}
         >
           ➤
@@ -206,16 +206,22 @@ export function Game(props: GameProps) {
             return <AttemptRow key={i} attempt={a} result={game.gradeResults[i]} topRow={i == 0}/>
           })
         }
-        <CurrAttemptRow currAttempt={game.currAttempt} onPegClick={game.popColor.bind(game)} />
+        <CurrAttemptRow
+          currAttempt={game.currAttempt}
+          onPegClick={game.popColor.bind(game)}
+          submitting={submitting}
+          setSubmitting={setSubmitting}
+        />
       </div>
       <ColorBoard 
         onColorClick={(c) => game.addColor(c)}
         clear={() => game.clearCurrAttempt()}
         enter={() => {
-          setSubmitting(true);
-          game.submit();
+          const ok = game.submit();
+          if (!ok) setSubmitting(true);
         }}
         submitting={submitting}
+        gameOver={game.gameOver}
       />
     </div>
   )

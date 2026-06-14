@@ -77,8 +77,8 @@ export class Mastermind {
 
     // all colors must be filled.
     submit() {
-        if (this.gameOver) return;
-        if (this.currAttempt.findIndex(v => v == null) != -1) return;
+        if (this.gameOver) return false;
+        if (this.currAttempt.findIndex(v => v == null) != -1) return false;
 
         const result = this.grade(this.currAttempt as colors[], this.code);
         this.attempts.push(structuredClone(this.currAttempt) as colors[]);
@@ -93,7 +93,7 @@ export class Mastermind {
         }
 
         this.currAttempt = Array(4).fill(null);
-
-        this.updateFn();  
+        this.updateFn();
+        return true;
     }
 }
